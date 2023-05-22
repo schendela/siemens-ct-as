@@ -21,9 +21,7 @@ Resources:
           sudo apt-get update
           sudo apt-get install apache2
           systemctl start httpd.service
-          systemctl enable httpd.service
-          echo “Hello World from $(hostname -f)” > /var/www/html/index.html
-          EOF
+          
       Tags:
         - Key: "Name"
           Value: "SiemenTest"
