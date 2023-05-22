@@ -1,0 +1,109 @@
+AWSTemplateFormatVersion: "2010-09-09"
+# Parameters: #Not sure if going to use
+#   paramName:
+#     Description: 
+#     Type: String|Number|CommaDelimitedList
+#     Default: -
+Resources: 
+  myEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: siemenTestE
+      ImageId: ami-053b0d53c279acc90
+      InstanceType: t3a.small
+      SubnetId: 
+        Ref: siemensubnet
+      SecurityGroupIds:
+        - Ref: siemensg
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          sudo apt-get update
+          sudo apt -get install apache2
+          systemctl start httpd.service
+          systemctl enable httpd.service
+          echo “Hello World from $(hostname -f)” > /var/www/html/index.html
+          EOF
+      Tags:
+        - Key: "Name"
+          Value: "SiemenTest"
+  siemensg:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: "SGSiemenTest"
+      GroupDescription: "Siemen Test SG"
+      VpcId: 
+        Ref: siemenTestVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - Description: "Allow all outbound traffic"
+          IpProtocol: "-1"
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: "Name"
+          Value: "SiemenTest"
+  siemenTestVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.10.10.0/24
+      EnableDnsSupport: true
+      Tags:
+        - Key: "Name"
+          Value: "SiemenTest"
+  siemensubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: "us-east-1a"
+      VpcId: 
+        Ref: siemenTestVPC
+      CidrBlock: 10.10.10.0/25
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: "Name"
+          Value: "SiemenTest"
+  siemenrtable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: 
+        Ref: siemenTestVPC
+      Tags:
+        - Key: "Name"
+          Value: "SiemenTest"
+  routeName:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: 
+        Ref: siemenrtable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: 
+        Ref: siemenigw
+  siemenigw:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: "Name"
+          Value: "SiemenTest"
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: 
+        Ref: siemenTestVPC
+      InternetGatewayId:
+        Ref: siemenigw
+  siemenrtassoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: 
+      RouteTableId: 
+        Ref: siemenrtable
+      SubnetId: 
+        Ref: siemensubnet
+  
+
