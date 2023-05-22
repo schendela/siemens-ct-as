@@ -21,7 +21,6 @@ Resources:
           yum update -y
           sudo yum -y install httpd
           sudo service httpd start  
-          
       Tags:
         - Key: "Name"
           Value: "EC2SiemenTest"
