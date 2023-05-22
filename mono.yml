@@ -1,9 +1,4 @@
 AWSTemplateFormatVersion: "2010-09-09"
-# Parameters: #Not sure if going to use
-#   paramName:
-#     Description: 
-#     Type: String|Number|CommaDelimitedList
-#     Default: -
 Resources: 
   myEC2Instance:
     Type: AWS::EC2::Instance
@@ -19,13 +14,18 @@ Resources:
         Fn::Base64: |
           #!/bin/bash
           sudo yum update -y
-          curl -fsSL https://rpm.nodesource.com/setup_16.x | sudo bash -
-          sudo yum update
+          sudo yum -y install curl
+          curl -sL https://rpm.nodesource.com/setup_16.x | sudo bash -
+          sudo yum update -y
           sudo yum install -y nodejs git
+          sudo yum -y install gcc-c++ make
           mkdir -p /home/ec2-user/app && cd /home/ec2-user/app
           git clone https://bitbucket.org/siemens-disw-dp/character-creator.git
-          npm install:all
-          iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-ports 3000
+          yum install iptables-services -y
+          systemctl enable iptables
+          systemctl start iptables
+          sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-ports 3000
+          sudo npm install #
           npm start
       Tags:
         - Key: "Name"
@@ -50,6 +50,10 @@ Resources:
           FromPort: 443
           ToPort: 443
           CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 3000
+          ToPort: 3000
+          CidrIp: 0.0.0.0/0  
       SecurityGroupEgress:
         - Description: "Allow all outbound traffic"
           IpProtocol: "-1"
