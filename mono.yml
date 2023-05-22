@@ -9,7 +9,7 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       KeyName: siemenTestE
-      ImageId: ami-053b0d53c279acc90
+      ImageId: ami-0889a44b331db0194
       InstanceType: t3a.small
       SubnetId: 
         Ref: siemensubnet
@@ -18,10 +18,17 @@ Resources:
       UserData:
         Fn::Base64: |
           #!/bin/bash
-          sudo apt-get update
-          sudo apt-get install apache2
-          systemctl start httpd.service
-          
+          yum update -y
+          amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
+          yum install -y httpd mariadb-server
+          systemctl start httpd
+          systemctl enable httpd
+          usermod -a -G apache ec2-user
+          chown -R ec2-user:apache /var/www
+          chmod 2775 /var/www
+          find /var/www -type d -exec chmod 2775 {} \;
+          find /var/www -type f -exec chmod 0664 {} \;
+          echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php
       Tags:
         - Key: "Name"
           Value: "SiemenTest"
