@@ -1,5 +1,5 @@
 # siemens-ct-as
-# Code test for siemens
+# Code test for Siemens
 ## The cloudformation template will deploy a ec2 instance with all supporting infrastructure. 
 - It deploys a new vpc. Cidr 10.10.0.0/24
 - New subnet 10.10.10.0/25
