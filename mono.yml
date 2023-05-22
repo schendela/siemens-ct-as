@@ -18,9 +18,15 @@ Resources:
       UserData:
         Fn::Base64: |
           #!/bin/bash
-          yum update -y
-          sudo yum -y install httpd
-          sudo service httpd start  
+          sudo yum update -y
+          curl -fsSL https://rpm.nodesource.com/setup_16.x | sudo bash -
+          sudo yum update
+          sudo yum install -y nodejs git
+          mkdir -p /home/ec2-user/app && cd /home/ec2-user/app
+          git clone https://bitbucket.org/siemens-disw-dp/character-creator.git
+          npm install:all
+          iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-ports 3000
+          npm start
       Tags:
         - Key: "Name"
           Value: "EC2SiemenTest"
